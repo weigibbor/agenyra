@@ -35,7 +35,7 @@ Grab the latest from **[Releases](https://github.com/weigibbor/agenyra/releases)
 | macOS (Apple Silicon) | `Agenyra-x.y.z-arm64.dmg` | Signed & notarized — open the dmg, drag Agenyra to Applications |
 | macOS (Intel) | `Agenyra-x.y.z.dmg` | Signed & notarized — open the dmg, drag Agenyra to Applications |
 
-Install once — from v0.2.0 Agenyra keeps itself up to date: it checks Releases in the background, shows the real download progress in the status bar, and applies the update when you restart.
+Install once — from v0.2.0 Agenyra keeps itself up to date: it checks Releases in the background, shows the real download progress in the status bar, and applies the update when you restart. The version you're running is shown next to the wordmark, top-left.
 
 Then add a project folder, spawn agents inside it, crown a HEAD, and hand it a goal.
 
@@ -81,7 +81,8 @@ More suites: `node test/guard.js` · `node test/worktree.js` · `node test/autop
 
 ```sh
 npm run dist        # Windows NSIS installer → dist/
-npm run dist:mac    # macOS dmg (run on macOS, or use the "Build macOS" GitHub Action)
+npm run dist:mac    # macOS signed+notarized dmg + zip (run on macOS; needs the
+                    # Developer ID cert + an APPLE_KEYCHAIN_PROFILE for notarization)
 ```
 
 ## Structure
