@@ -12,5 +12,13 @@ sandbox/
 # Runtime app state (folder registry, layout) — machine-local, not source
 .state/
 
+# Internal working notes — local only, never in the public repo
+DEV_NOTES.md
+ARCHITECTURE.md
+ROADMAP.md
+DESIGN_BRIEF.md
+DESIGN_BRIEF_V2.md
+docs weigi/
+
 # Pre-Onyx renderer snapshot kept as a local restore point (see Phase 4A)
 legacy/
