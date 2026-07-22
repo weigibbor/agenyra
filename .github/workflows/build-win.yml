@@ -1,8 +1,15 @@
-# Windows build — NSIS installer on a windows runner. A v* tag also publishes
-# the exe + latest.yml (the electron-updater feed for Windows) to the tag's
-# draft GitHub Release, same flow as build-mac.yml. Unsigned for now, so
-# SmartScreen warns on first run — a Windows code-signing cert is a separate
-# pending item.
+# Windows build — NSIS installer on a windows runner. On a v* tag it uploads the
+# exe + blockmap + latest.yml (the electron-updater feed for Windows) to that
+# tag's GitHub Release. Unsigned for now, so SmartScreen warns on first run — a
+# Windows code-signing cert is a separate pending item.
+#
+# We build with `--publish never` and upload the assets ourselves with `gh`
+# instead of letting electron-builder's own publisher do it: that publisher
+# races on its parallel artifact uploads and can create *two* draft releases for
+# the same tag (drafts aren't unique per tag on GitHub). A single
+# create-if-missing + clobbering upload is deterministic. The shared
+# `concurrency` group also serialises this with the macOS release job so the two
+# can never create a release for the same tag at the same time.
 name: Build Windows
 
 on:
@@ -11,7 +18,11 @@ on:
     tags: ['v*']
 
 permissions:
-  contents: write # electron-builder uploads release assets on tag builds
+  contents: write # upload release assets on tag builds
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   win:
@@ -23,9 +34,19 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run dist -- --publish ${{ startsWith(github.ref, 'refs/tags/') && 'always' || 'never' }}
+      # `--publish never` still generates latest.yml (the update feed) in dist/;
+      # it just doesn't upload. We upload in the next step.
+      - run: npm run dist -- --publish never
+      - name: Publish Windows installer to the tag's release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$tag" --repo "$GITHUB_REPOSITORY" --draft --title "${tag#v}" --notes "Draft release — assets uploading."
+          gh release upload "$tag" dist/*.exe dist/*.blockmap dist/latest.yml --clobber --repo "$GITHUB_REPOSITORY"
       - uses: actions/upload-artifact@v4
         with:
           name: Agenyra-win

@@ -17,6 +17,16 @@ on:
 permissions:
   contents: write # electron-builder uploads release assets on tag builds
 
+# Shared with build-win.yml so the two release jobs never touch the same tag's
+# release concurrently. NOTE: when mac CI signing is enabled (MAC_CERT_P12 etc.),
+# switch this job to the same `--publish never` + `gh release upload --clobber`
+# pattern build-win.yml uses (and add notarytool submit + stapler staple for the
+# dmgs) instead of electron-builder's own publisher, which can create duplicate
+# draft releases.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   mac:
     runs-on: macos-latest
