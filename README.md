@@ -31,9 +31,11 @@ Grab the latest from **[Releases](https://github.com/weigibbor/agenyra/releases)
 
 | Platform | File | Note |
 |---|---|---|
-| Windows | `Agenyra Setup x.y.z.exe` | Unsigned test build — SmartScreen: *More info → Run anyway* |
-| macOS (Apple Silicon) | `Agenyra-x.y.z-arm64.dmg` | Unsigned — right-click the app → *Open* |
-| macOS (Intel) | `Agenyra-x.y.z.dmg` | Unsigned — right-click the app → *Open* |
+| Windows | `Agenyra-Setup-x.y.z.exe` | Unsigned for now — SmartScreen: *More info → Run anyway* |
+| macOS (Apple Silicon) | `Agenyra-x.y.z-arm64.dmg` | Signed (Developer ID), not yet notarized — right-click the app → *Open* on first launch |
+| macOS (Intel) | `Agenyra-x.y.z.dmg` | Signed (Developer ID), not yet notarized — right-click the app → *Open* on first launch |
+
+Install once — from v0.2.0 Agenyra keeps itself up to date: it checks Releases in the background, shows the real download progress in the status bar, and applies the update when you restart.
 
 Then add a project folder, spawn agents inside it, crown a HEAD, and hand it a goal.
 
