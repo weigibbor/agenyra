@@ -466,3 +466,6 @@ html[data-theme="light"]{
 .hero>div{min-width:0}
 .hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0;margin-left:auto}
 .button,.primary{flex-shrink:0;white-space:nowrap}
+
+/* auto-update restart chip (status bar) */
+.upd-ready{color:var(--good);cursor:pointer;white-space:nowrap}.upd-ready:hover{text-decoration:underline}

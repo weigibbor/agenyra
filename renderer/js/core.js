@@ -50,6 +50,7 @@
     handedOff: {},        // agentId -> true once its Parent has sent it work (FEAT-005)
     cost: { perAgent: {}, totals: { known: false, tokens: 0, usd: 0 } }, // best-effort estimate (4B)
     settings: null,       // app settings mirror ({openMesh, launch, ...}); null until first load
+    update: null,         // auto-updater mirror ({phase, version, next, percent}); 'dev' phase in dev runs
   };
 
   // ---------- pub/sub ----------
@@ -146,6 +147,7 @@
   if (mesh.onFolders) mesh.onFolders((list) => { state.folders = list || []; emit('folders', state.folders); });
   if (mesh.onCostUpdate) mesh.onCostUpdate((s) => { if (s) state.cost = s; emit('cost', state.cost); });
   if (mesh.onSettings) mesh.onSettings((s) => { if (s) { state.settings = s; emit('settings', s); } });
+  if (mesh.onUpdateState) mesh.onUpdateState((u) => { if (u) { state.update = u; emit('update', u); } });
   if (mesh.settingsGet) mesh.settingsGet().then((s) => { if (s) { state.settings = s; emit('settings', s); } }).catch(() => {});
   const openMesh = () => !!(state.settings && state.settings.openMesh);
 

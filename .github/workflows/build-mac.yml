@@ -1,12 +1,21 @@
-# macOS build — runs on a GitHub-hosted Mac runner since dmg files can only be
-# produced on macOS. Trigger manually (Actions → Build macOS → Run workflow) or
-# by pushing a v* tag. The dmg lands in the run's Artifacts section.
+# macOS build — signed with the GE Labs "Developer ID Application" cert and
+# notarized when the repo secrets are present (falls back to unsigned, e.g. on
+# forks). A v* tag also publishes dmg+zip+latest-mac.yml to the tag's draft
+# GitHub Release: that feed is what shipped apps poll for auto-updates, and the
+# update goes live the moment the draft release is published.
+#
+# Secrets (Settings → Secrets and variables → Actions):
+#   MAC_CERT_P12 / MAC_CERT_PASSWORD         base64 .p12 export of the cert
+#   APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD   notarytool credentials
 name: Build macOS
 
 on:
   workflow_dispatch:
   push:
     tags: ['v*']
+
+permissions:
+  contents: write # electron-builder uploads release assets on tag builds
 
 jobs:
   mac:
@@ -18,13 +27,23 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # x64 + arm64 dmgs in one run; no signing cert yet, so skip identity
-      # discovery (testers right-click → Open past Gatekeeper).
-      - run: npm run dist:mac -- --publish never --x64 --arm64
+      # zip + dmg for x64 + arm64 (the zip is what the mac updater installs
+      # from). Empty env vars behave as unset: no cert secret → unsigned build,
+      # no Apple ID secret → notarization skipped with a warning.
+      - run: npm run dist:mac -- --x64 --arm64 --publish ${{ startsWith(github.ref, 'refs/tags/') && 'always' || 'never' }}
         env:
-          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_LINK: ${{ secrets.MAC_CERT_P12 }}
+          CSC_KEY_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: LE6BHLWBPY
       - uses: actions/upload-artifact@v4
         with:
-          name: Agenyra-mac-dmg
-          path: dist/*.dmg
+          name: Agenyra-mac
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.blockmap
+            dist/latest-mac.yml
           if-no-files-found: error

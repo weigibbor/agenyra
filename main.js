@@ -17,9 +17,10 @@ const os = require('os');
 const { CostTracker, mungeCwd } = require('./main/cost');
 const { SessionStore } = require('./main/session');
 const { writeFileAtomic } = require('./main/atomic');
+const { Updater } = require('./main/updater');
 
 let win = null;
-let pty, router, coordinator, guard, bus, missions, runlog, engine, cost, session;
+let pty, router, coordinator, guard, bus, missions, runlog, engine, cost, session, updater;
 
 // Last-resort crash guards: a single throw from a PTY write, a bus handler, or a
 // stray rejection must NOT take down the whole app (and every live agent with
@@ -391,7 +392,7 @@ ipcMain.handle('panes:list', () => pty.list());
 ipcMain.handle('task:add', (_e, { title, steps }) => coordinator.addTask(title, steps || []));
 // busToken is handed to the (trusted, CSP-locked) renderer only so in-app tooling
 // and QA can talk to the bus; an external page can't reach this IPC bridge.
-ipcMain.handle('app:info', () => ({ busPort: bus ? bus.port : 0, busToken, cwd: process.cwd(), startedAt }));
+ipcMain.handle('app:info', () => ({ busPort: bus ? bus.port : 0, busToken, cwd: process.cwd(), startedAt, version: app.getVersion() }));
 
 // ---- IPC: folders (projects) -----------------------------------------------
 ipcMain.handle('folder:add', async () => {
@@ -740,6 +741,11 @@ ipcMain.on('win:maximize', () => {
 });
 ipcMain.on('win:close', () => win && win.close());
 
+// ---- IPC: auto-update (packaged builds only — see main/updater.js) ----------
+ipcMain.handle('update:get', () => (updater ? updater.state : null));
+ipcMain.on('update:check', () => { if (updater) updater.check(); });
+ipcMain.on('update:install', () => { if (updater) updater.install(); });
+
 // Single-instance lock: a second launch would spin up a second bus and race the
 // SAME .state/*.json files (last-writer-wins corruption) and contend over the
 // worktrees. Instead, hand focus to the window that's already open and exit.
@@ -759,6 +765,8 @@ if (!app.requestSingleInstanceLock()) {
       return;
     }
     createWindow();
+    updater = new Updater(send);
+    updater.start();
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
@@ -777,4 +785,5 @@ app.on('quit', () => {
   if (bus) bus.stop();
   if (engine) engine.stop();
   if (cost) cost.stop();
+  if (updater) updater.stop();
 });

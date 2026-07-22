@@ -18,6 +18,7 @@
       wts.forEach((w) => { AM.state.paneMeta[w.id] = { branch: w.branch, worktreePath: w.path }; });
       // Fetch live wires so the mesh + sidebar rail survive a reload.
       if (mesh.listWires) AM.state.wires = (await mesh.listWires()) || [];
+      if (mesh.updateGet) AM.state.update = (await mesh.updateGet()) || null;
     } catch (e) {
       console.error('[agenyra] boot failed:', e && e.message);
     }

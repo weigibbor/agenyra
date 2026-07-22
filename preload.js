@@ -86,6 +86,9 @@ contextBridge.exposeInMainWorld('mesh', {
 
   // app + window
   appInfo: () => ipcRenderer.invoke('app:info'),
+  updateGet: () => ipcRenderer.invoke('update:get'),
+  updateCheck: () => ipcRenderer.send('update:check'),
+  updateInstall: () => ipcRenderer.send('update:install'),
   minimize: () => ipcRenderer.send('win:minimize'),
   maximize: () => ipcRenderer.send('win:maximize'),
   close: () => ipcRenderer.send('win:close'),
@@ -98,4 +101,5 @@ contextBridge.exposeInMainWorld('mesh', {
   onCoordinatorState: (cb) => ipcRenderer.on('coordinator:state', (_e, d) => cb(d)),
   onWires: (cb) => ipcRenderer.on('wires:update', (_e, d) => cb(d)),
   onPanes: (cb) => ipcRenderer.on('panes:update', (_e, d) => cb(d)),
+  onUpdateState: (cb) => ipcRenderer.on('update:state', (_e, d) => cb(d)),
 });

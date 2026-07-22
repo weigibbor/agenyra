@@ -394,9 +394,19 @@
     if (st.cost && st.cost.totals && st.cost.totals.known) {
       parts.push('<span class="sep">•</span><span class="mono" title="Best-effort estimate from Claude transcripts">$' + st.cost.totals.usd.toFixed(2) + ' est</span>');
     }
+    // Auto-update: real updater states only — actual %, actual version. The
+    // restart chip appears ONLY once the update is verified on disk.
+    const up = st.update;
+    if (up && up.phase === 'downloading') {
+      parts.push('<span class="sep">•</span><span class="mono">update v' + esc(up.next || '') + ' · ' + (up.percent == null ? 'starting…' : up.percent + '%') + '</span>');
+    } else if (up && up.phase === 'ready') {
+      parts.push('<span class="sep">•</span><span class="upd-ready" id="updRestart" title="Downloaded and verified — click to restart into v' + esc(up.next || '') + '">⟳ v' + esc(up.next || '') + ' ready — restart</span>');
+    }
     parts.push('<span class="push"></span>');
     parts.push('<span class="mono">' + (f ? esc(f.name) + (f.isGit ? ' · ' + esc(f.baseBranch || 'main') : '') : 'no folder') + '</span>');
     bar.innerHTML = parts.join('');
+    const ur = el('updRestart');
+    if (ur) ur.onclick = () => mesh.updateInstall();
     // topbar brand repo chip (was unwired)
     el('repoLabel').textContent = f ? '/ ' + f.name : '';
   }
@@ -509,4 +519,12 @@
   AM.on('selectFolder', renderSidebar);
   AM.on('wires', () => { renderSidebar(); renderStatus(); }); // keep the sidebar rail in sync with the mesh
   AM.on('cost', renderStatus);
+  let updateToastedFor = ''; // toast once per version, not on every state event
+  AM.on('update', (u) => {
+    renderStatus();
+    if (u && u.phase === 'ready' && updateToastedFor !== u.next) {
+      updateToastedFor = u.next;
+      toast('Update v' + u.next + ' downloaded — restart anytime to apply');
+    }
+  });
 })();
