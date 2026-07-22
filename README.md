@@ -32,8 +32,8 @@ Grab the latest from **[Releases](https://github.com/weigibbor/agenyra/releases)
 | Platform | File | Note |
 |---|---|---|
 | Windows | `Agenyra-Setup-x.y.z.exe` | Unsigned for now — SmartScreen: *More info → Run anyway* |
-| macOS (Apple Silicon) | `Agenyra-x.y.z-arm64.dmg` | Signed (Developer ID), not yet notarized — right-click the app → *Open* on first launch |
-| macOS (Intel) | `Agenyra-x.y.z.dmg` | Signed (Developer ID), not yet notarized — right-click the app → *Open* on first launch |
+| macOS (Apple Silicon) | `Agenyra-x.y.z-arm64.dmg` | Signed & notarized — open the dmg, drag Agenyra to Applications |
+| macOS (Intel) | `Agenyra-x.y.z.dmg` | Signed & notarized — open the dmg, drag Agenyra to Applications |
 
 Install once — from v0.2.0 Agenyra keeps itself up to date: it checks Releases in the background, shows the real download progress in the status bar, and applies the update when you restart.
 

@@ -6,7 +6,9 @@
   The status bar shows real download progress; a restart chip appears once the
   update is verified on disk, and a downloaded update also applies on normal quit.
 - macOS builds are now code-signed (Developer ID, hardened runtime) and
-  notarized when notary credentials are present at build time.
+  notarized by Apple — no Gatekeeper warning, no right-click-to-open.
+- macOS dmg has a proper installer layout: a dark branded background with
+  the app and an Applications shortcut, drag across to install.
 - macOS now also produces a `.zip` artifact — required by the macOS updater;
   the `.dmg` remains the first-install download.
 
