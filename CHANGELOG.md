@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.1 — 2026-07-22
+
+- The running version now shows as a small `vX.Y.Z` tag next to the Agenyra
+  wordmark (top-left), so you can tell at a glance which build you're on.
+- Update checks, downloads, and failures are now logged to the main process
+  log (offline/404/signature errors were previously invisible).
+
 ## 0.2.0 — 2026-07-22
 
 - Auto-update on Windows and macOS via GitHub Releases (electron-updater).

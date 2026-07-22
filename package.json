@@ -1,6 +1,6 @@
 {
   "name": "agenyra",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Agenyra — wired multi-agent terminal orchestrator. Maraming AI CLI agent sa panes na nag-uusap, may HEAD na nag-o-orchestrate. Black theme, Windows + macOS.",
   "main": "main.js",
   "author": "Weigi",
