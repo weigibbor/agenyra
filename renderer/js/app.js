@@ -8,7 +8,12 @@
   async function boot() {
     try {
       const info = await mesh.appInfo();
-      if (info) { AM.state.busPort = info.busPort || 0; AM.state.busToken = info.busToken || ''; if (info.startedAt) AM.state.startedAt = info.startedAt; }
+      if (info) {
+        AM.state.busPort = info.busPort || 0; AM.state.busToken = info.busToken || ''; if (info.startedAt) AM.state.startedAt = info.startedAt;
+        AM.state.version = info.version || '';
+        // Version tag next to the brand — a static, at-a-glance "which build am I on".
+        const bv = AM.el('brandVer'); if (bv && AM.state.version) bv.textContent = 'v' + AM.state.version;
+      }
       AM.state.folders = (await mesh.listFolders()) || [];
       AM.state.panes = (await mesh.listPanes()) || [];
       AM.state.snapshot = (await mesh.snapshot()) || AM.state.snapshot;

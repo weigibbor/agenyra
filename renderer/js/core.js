@@ -51,6 +51,7 @@
     cost: { perAgent: {}, totals: { known: false, tokens: 0, usd: 0 } }, // best-effort estimate (4B)
     settings: null,       // app settings mirror ({openMesh, launch, ...}); null until first load
     update: null,         // auto-updater mirror ({phase, version, next, percent}); 'dev' phase in dev runs
+    version: '',          // app version (from app:info), shown next to the brand
   };
 
   // ---------- pub/sub ----------

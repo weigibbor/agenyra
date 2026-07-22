@@ -30,6 +30,10 @@ class Updater {
     if (!app.isPackaged) return;
     const { autoUpdater } = require('electron-updater');
     this.auto = autoUpdater;
+    // Surface the updater's own check/download/verify lines in the main log —
+    // an offline/404/signature failure throws inside checkForUpdates and would
+    // otherwise be invisible (the UI just shows no chip).
+    autoUpdater.logger = console;
     autoUpdater.autoDownload = true;
     // A downloaded update applies on normal quit too, not only via the restart
     // chip — nobody stays pinned to an old build by never clicking it.

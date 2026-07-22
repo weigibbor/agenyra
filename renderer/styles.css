@@ -469,3 +469,6 @@ html[data-theme="light"]{
 
 /* auto-update restart chip (status bar) */
 .upd-ready{color:var(--good);cursor:pointer;white-space:nowrap}.upd-ready:hover{text-decoration:underline}
+
+/* version tag next to the brand (top-left) */
+.brand-ver{font-size:10px;font-weight:600;color:var(--quiet);letter-spacing:.02em;padding:1px 5px;border:1px solid var(--line);border-radius:5px;white-space:nowrap;line-height:1.4}
