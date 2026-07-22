@@ -93,6 +93,14 @@ bin/mesh(.js/.cmd)   the `mesh` CLI injected into every pane
 test/                deterministic test suites
 ```
 
+## Contributing
+
+Agenyra is open source and contributions are welcome:
+
+- 💬 **[Discussions](https://github.com/weigibbor/agenyra/discussions)** — suggest features, ask questions, share setups
+- 🐛 **[Issues](https://github.com/weigibbor/agenyra/issues)** — report bugs
+- 🔀 **Pull requests** — see [CONTRIBUTING.md](./CONTRIBUTING.md) for the quick guide (tests to run, style, security rules)
+
 ## License
 
 [MIT](./LICENSE) — free to use, fork, and ship.
