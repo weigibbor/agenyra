@@ -1,0 +1,30 @@
+# macOS build — runs on a GitHub-hosted Mac runner since dmg files can only be
+# produced on macOS. Trigger manually (Actions → Build macOS → Run workflow) or
+# by pushing a v* tag. The dmg lands in the run's Artifacts section.
+name: Build macOS
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+jobs:
+  mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # x64 + arm64 dmgs in one run; no signing cert yet, so skip identity
+      # discovery (testers right-click → Open past Gatekeeper).
+      - run: npm run dist:mac -- --publish never --x64 --arm64
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Agenyra-mac-dmg
+          path: dist/*.dmg
+          if-no-files-found: error

@@ -1,0 +1,64 @@
+{
+  "name": "agenyra",
+  "version": "0.1.0",
+  "description": "Agenyra — wired multi-agent terminal orchestrator. Maraming AI CLI agent sa panes na nag-uusap, may HEAD na nag-o-orchestrate. Black theme, Windows + macOS.",
+  "main": "main.js",
+  "author": "Weigi",
+  "homepage": "https://agenyra.com",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/smoke.js",
+    "dist": "electron-builder --win nsis",
+    "dist:mac": "electron-builder --mac dmg"
+  },
+  "build": {
+    "appId": "com.agenyra.app",
+    "productName": "Agenyra",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!bin/**",
+      "!test/**",
+      "!.state/**",
+      "!dist/**",
+      "!build/**",
+      "!*.md",
+      "!.claude/**",
+      "!.github/**"
+    ],
+    "extraResources": [
+      {
+        "from": "bin",
+        "to": "bin"
+      }
+    ],
+    "asarUnpack": [
+      "**/node_modules/@lydell/node-pty*/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "build/icon.icns",
+      "category": "public.app-category.developer-tools"
+    }
+  },
+  "dependencies": {
+    "@lydell/node-pty": "^1.2.0-beta.12",
+    "@xterm/addon-fit": "^0.10.0",
+    "@xterm/xterm": "^5.5.0"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^26.15.3"
+  }
+}

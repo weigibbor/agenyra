@@ -1,0 +1,16 @@
+node_modules/
+.agent-mesh/
+dist/
+out/
+*.log
+.DS_Store
+
+# Local test playground (demo git repo) + generated worker worktrees — never commit
+sandbox/
+*.worktrees/
+
+# Runtime app state (folder registry, layout) — machine-local, not source
+.state/
+
+# Pre-Onyx renderer snapshot kept as a local restore point (see Phase 4A)
+legacy/

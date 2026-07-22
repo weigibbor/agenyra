@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <!-- Strict CSP (Phase 5): local files only; 'unsafe-inline' styles are for
+       xterm's injected style tags. No remote origins, ever. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Agenyra</title>
+  <script src="./js/pretheme.js"></script>
+  <link rel="stylesheet" href="../node_modules/@xterm/xterm/css/xterm.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="top-left">
+        <button class="icon active" id="sideToggle" type="button" aria-label="Toggle projects">◫</button>
+        <div class="brand" aria-label="Agenyra"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64"><polyline points="13,44 19,19 26,33 32,13 38,33 45,19 51,44" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><line x1="13" y1="44" x2="51" y2="44" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><circle cx="19" cy="19" r="4" fill="var(--head)"/><circle cx="32" cy="13" r="4.5" fill="var(--head)"/><circle cx="45" cy="19" r="4" fill="var(--head)"/></svg></span><span class="brand-name">Agenyra</span><span class="repo" id="repoLabel"></span></div>
+      </div>
+      <nav class="seg" aria-label="Primary views"><button class="active" type="button" data-view="chats">Chats</button><button type="button" data-view="workbench">Code</button><button type="button" data-view="mesh">Mesh</button><button type="button" data-view="autopilot">Autopilot</button></nav>
+      <div class="actions">
+        <button class="search" id="paletteOpen" type="button" aria-label="Open commands"><span>⌕</span><span class="label">Search</span><span class="key">⌘K</span></button>
+        <button class="run paused" id="runPill" type="button"><span class="dot"></span><span id="runText">Manual</span></button>
+        <button class="icon" id="settingsOpen" type="button" aria-label="Open settings">⚙</button>
+        <button class="icon" id="themeToggle" type="button" aria-label="Switch black and white appearance">◐</button>
+        <button class="icon active" id="inspectToggle" type="button" aria-label="Toggle inspector">◧</button>
+        <div class="win-ctl">
+          <button class="icon" id="winMin" type="button" aria-label="Minimize">－</button>
+          <button class="icon" id="winMax" type="button" aria-label="Maximize">▢</button>
+          <button class="icon wclose" id="winClose" type="button" aria-label="Close">✕</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <aside class="sidebar" aria-label="Projects and agents">
+        <div class="side-inner">
+          <div class="scroll" id="sideScroll">
+            <!-- folders + agents rendered by shell.js -->
+          </div>
+          <div class="side-foot"><button class="button" id="addFolder" type="button">＋ Folder</button><button class="button" id="addAgent" type="button">＋ Agent</button></div>
+        </div>
+      </aside>
+
+      <main class="main">
+        <!-- ======== CHATS ======== -->
+        <section class="view chat active" id="view-chats" aria-label="Chats">
+          <div class="view-head">
+            <span class="dot" id="chatDot"></span>
+            <span class="view-title" id="chatName">No agent</span>
+            <span class="chip role-chip hidden" id="chatRole"></span>
+            <span class="chip mono hidden" id="chatModel"></span>
+            <span class="chip mono hidden" id="chatEffort"></span>
+            <span class="chip mono hidden" id="chatCtx" title="Context remaining (live from the agent)"></span>
+            <span class="chip mono hidden" id="chatBranch"></span>
+            <span class="chip lock hidden" id="chatLock"></span>
+            <span class="push"></span>
+            <div class="seg compact hidden" id="chatMode"><button class="active" type="button" data-mode="chat">Chat</button><button type="button" data-mode="raw">Raw</button></div>
+            <button class="icon hidden" id="chatActions" type="button" aria-label="Agent actions">•••</button>
+          </div>
+          <div class="thread-wrap" id="threadScroll">
+            <div class="thread" id="thread"></div>
+            <div class="rawhost" id="rawHost"></div>
+            <button class="newmsg" id="newMsg" type="button">↓ New messages</button>
+          </div>
+          <div class="progress hidden" id="progress">
+            <span class="dot live"></span><span id="progStep">Idle</span><span class="mono" id="progCount"></span>
+            <span class="bar"><i id="progBar"></i></span><span class="push"></span><span class="chip mono hidden" id="progFile"></span>
+          </div>
+          <form class="composer hidden" id="composer">
+            <div class="attach-tray" id="attachTray" hidden></div>
+            <div class="compose-inner">
+              <button class="icon" id="goalToggle" type="button" title="Goal mode" aria-label="Goal mode">◎</button>
+              <input id="messageInput" type="text" autocomplete="off" placeholder="Message agent — paste an image with Ctrl+V" aria-label="Message agent">
+              <button class="send" type="submit" aria-label="Send message">↑</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- ======== CODE WORKBENCH (AM-FEAT-002) ======== -->
+        <section class="view workbench-view" id="view-workbench" aria-label="Live code workbench">
+          <div class="workbench-bar">
+            <span class="live-beacon" id="liveBeacon" aria-hidden="true"></span>
+            <div class="live-edit-copy">
+              <div class="live-edit-title"><span id="editingAgent">—</span><span class="muted" id="editingVerb">is idle</span></div>
+              <div class="live-edit-detail" id="editingPath">select an agent to observe its workspace</div>
+            </div>
+            <span class="chip workbench-activity" id="workbenchActivity" role="status"><span class="dot"></span><span id="workbenchActivityText">Idle</span></span>
+            <span class="chip mono hidden" id="wbBranch"></span>
+            <span class="chip" id="wbModeChip">view</span>
+            <span class="push"></span>
+            <button class="button small hidden" id="editCancel" type="button">Cancel</button>
+            <button class="button small" id="editToggle" type="button">Edit</button>
+            <button class="button small follow-button" id="followEditor" type="button" aria-pressed="true">Following</button>
+          </div>
+          <div class="workbench-editor">
+            <div class="editor-crumbs"><span id="editorRepo">—</span><span>›</span><span id="editorFolder">—</span><span>›</span><strong id="editorFileName">no file</strong></div>
+            <div class="editor-canvas" id="editorCanvas">
+              <span class="edit-presence" id="editPresence" hidden>editing here</span>
+              <pre class="editor-code" aria-label="Live source view"><code id="liveCode"></code></pre>
+              <textarea class="editor-textarea hidden" id="editTextarea" spellcheck="false" aria-label="Edit source"></textarea>
+            </div>
+          </div>
+          <section class="workbench-dock" id="workbenchDock" aria-label="Workbench panel">
+            <div class="dock-resize" id="dockResize" title="Drag to resize the terminal"></div>
+            <div class="dock-head">
+              <button class="dock-tab active" type="button" data-dock="terminal">Terminal</button>
+              <button class="dock-tab" type="button" data-dock="changes">Changes</button>
+              <span class="push"></span>
+              <span class="quiet mono" id="dockStatus"></span>
+              <button class="icon" id="dockMax" type="button" title="Maximize / restore the terminal" aria-label="Toggle terminal size" style="width:24px;height:24px;font-size:11px">⌃</button>
+            </div>
+            <div class="dock-pane active" id="dock-terminal"><div class="dock-term-host" id="dockTermHost"></div></div>
+            <div class="dock-pane" id="dock-changes"><div class="change-list" id="changeList"></div></div>
+          </section>
+        </section>
+
+        <!-- ======== MESH (mesh-first hierarchy, AM-FEAT-004) ======== -->
+        <section class="view dashboard-view" id="view-mesh" aria-label="Agent mesh">
+          <div class="dashboard mesh-dashboard">
+            <div class="hero"><div><div class="kicker">Live topology</div><h1 class="title" id="meshTitle">Agent mesh</h1><p class="lead">An infinite canvas — drag empty space to pan, scroll to zoom. Drag nodes to arrange, double-click to configure, pull a port to connect. Reset view frames every terminal without moving them.</p></div><div class="hero-actions"><button class="button" id="meshResetView" type="button" title="Frame all terminals — positions unchanged">Reset view</button><button class="button" id="meshCenter" type="button" title="Auto-arrange terminals into a tidy layout">Auto-arrange</button><button class="primary" id="addMeshAgent" type="button">＋ Add agent</button></div></div>
+            <div class="mesh-stage">
+              <section class="panel">
+                <div class="panel-head"><span class="panel-title">Agent mesh</span><span class="caption">editable · live</span><span class="push"></span><span class="chip" id="meshConn"><span class="dot"></span>Idle</span></div>
+                <div class="live-mesh" id="liveMesh" aria-label="Editable live agent mesh">
+                  <canvas class="mesh-wire-canvas" id="meshWireCanvas" aria-hidden="true"></canvas>
+                  <div class="mesh-node-layer" id="meshNodeLayer"></div>
+                  <div class="mesh-empty" id="meshEmpty" hidden><div><strong>No agents in this mesh</strong><span>Add agents, then drag from a node's port onto another to connect them.</span></div></div>
+                  <div class="mesh-hint" id="meshHint">Drag space to pan · scroll to zoom · drag nodes · double-click to configure · pull a port to connect</div>
+                  <div class="mesh-traffic"><span class="dot live"></span><span id="meshTrafficLabel">Bus traffic live</span></div>
+                  <div class="mesh-zoom" id="meshZoom"><button class="icon" id="meshZoomOut" type="button" aria-label="Zoom out">−</button><span class="mesh-zoom-label" id="meshZoomLabel">100%</span><button class="icon" id="meshZoomIn" type="button" aria-label="Zoom in">＋</button><button class="icon" id="meshZoomFit" type="button" aria-label="Fit all terminals" title="Fit all">⛶</button></div>
+                  <aside class="mesh-config" id="meshConfig" aria-label="Selected agent mesh settings" hidden>
+                    <div class="mesh-config-head"><div><div class="mesh-config-title" id="meshConfigTitle">—</div><div class="mesh-config-sub" id="meshConfigSubtitle">Independent terminal</div></div><span class="push"></span><button class="icon" id="meshConfigClose" type="button" aria-label="Close mesh inspector">×</button></div>
+                    <div class="mesh-config-body">
+                      <div class="mesh-config-note" id="meshOpenMeshNote" hidden>⚡ Open mesh is ON — every terminal in this folder can already send &amp; receive to all the others. The routes below are saved for strict mode (Guardrails → Open mesh off).</div>
+                      <section class="mesh-config-section"><div class="mesh-config-label">Role <span>right-click node to change</span></div><div class="mesh-role-summary"><strong id="meshRoleSummary">Normal terminal</strong><span id="meshRoleHint">Multiple HEADs allowed</span></div></section>
+                      <section class="mesh-config-section"><div class="mesh-config-label">Hierarchy <span>workspace sync</span></div><label class="mesh-field" for="meshParentSelect">Parent terminal<select id="meshParentSelect"></select></label><label class="mesh-field" for="meshActivationSelect">Activation<select id="meshActivationSelect"><option value="manual">Manual</option><option value="immediate">Immediate</option><option value="on_parent_handoff">After Parent handoff</option></select></label><button class="button small mesh-parent-shortcut" id="meshConnectParent" type="button">Connect both directions with Parent</button><div class="mesh-config-note">Parenting only organizes the workspace. In strict mode, communication requires explicit directed wires.</div></section>
+                      <section class="mesh-config-section"><div class="mesh-config-label">Can send to <span id="meshSendCount">0 routes</span></div><div class="mesh-route-add"><select id="meshSendTarget" aria-label="Select outgoing route target"></select><button class="button small" id="meshAddSend" type="button">Add</button></div><div class="mesh-route-list" id="meshSendList"></div></section>
+                      <section class="mesh-config-section"><div class="mesh-config-label">Can receive from <span id="meshReceiveCount">0 routes</span></div><div class="mesh-route-add"><select id="meshReceiveSource" aria-label="Select incoming route source"></select><button class="button small" id="meshAddReceive" type="button">Add</button></div><div class="mesh-route-list" id="meshReceiveList"></div></section>
+                      <section class="mesh-config-section"><button class="button small guardrail-stop" id="meshCloseAgent" type="button">Close agent</button></section>
+                    </div>
+                  </aside>
+                </div>
+              </section>
+            </div>
+            <div class="mesh-support-grid">
+              <div class="metrics mesh-compact-metrics" aria-label="Mesh run statistics">
+                <div class="metric"><div class="metric-label">Agents</div><div class="metric-value" id="mAgents">0</div><div class="metric-note" id="mAgentsNote">none yet</div></div>
+                <div class="metric"><div class="metric-label">Exchanges</div><div class="metric-value" id="mExch">0</div><div class="metric-note" id="mExchNote">of ∞ allowed</div></div>
+                <div class="metric"><div class="metric-label">Tokens</div><div class="metric-value na" id="mTokens">—</div><div class="metric-note">best-effort estimate</div></div>
+                <div class="metric"><div class="metric-label">Spend</div><div class="metric-value na" id="mSpend">—</div><div class="metric-note">cap in Guardrails</div></div>
+              </div>
+              <section class="panel mesh-guardrail-panel">
+                <div class="panel-head"><span class="panel-title">Guardrails</span><span class="push"></span><span class="chip" id="guardArmed">Armed</span></div>
+                <div class="guardrail-compact" id="guardPanel">
+                  <div class="guardrail-mini"><span>Exchange cap</span><strong class="mono" id="capValue">∞</strong></div>
+                  <div class="guardrail-mini"><span>Exchanges used</span><strong class="mono" id="capUsed">0</strong></div>
+                  <div class="guardrail-mini"><span>Open mesh</span><button class="switch off" id="openMeshSwitch" type="button" aria-label="Toggle open mesh" aria-pressed="false" style="margin-left:auto;transform:scale(.82);transform-origin:right center" title="ON: every terminal in a folder can send & receive freely. OFF: strict directed wires only."><i></i></button></div>
+                  <div class="guardrail-mini"><span>Loop detection</span><strong id="loopState">On</strong></div>
+                  <div class="guardrail-mini"><span>Status</span><strong id="guardStatus">Running</strong></div>
+                  <div class="guardrail-usage"><span>Set cap</span><input class="mono" id="capInput" type="number" min="0" placeholder="50" style="height:26px;padding:0 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--text);outline:0;width:100%;font-size:10px"><button class="button small" id="capSet" type="button" style="height:26px">Set</button></div>
+                  <div class="guardrail-usage"><span>Budget $</span><input class="mono" id="budgetInput" type="number" min="0" step="0.5" placeholder="off" style="height:26px;padding:0 8px;border:1px solid var(--line);border-radius:7px;background:var(--surface);color:var(--text);outline:0;width:100%;font-size:10px"><button class="button small" id="budgetSet" type="button" style="height:26px">Set</button></div>
+                  <button class="button small guardrail-stop" id="stopAll" type="button">Stop all agents</button>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======== AUTOPILOT ======== -->
+        <section class="view dashboard-view" id="view-autopilot" aria-label="Autopilot">
+          <div class="dashboard">
+            <div class="hero"><div><div class="kicker">Autopilot</div><h1 class="title">Keep the run moving.</h1><p class="lead" id="modeDescription">Pauses before every merge and leaves an approval item for you.</p></div><span class="push"></span><div class="seg compact" id="autoMode"><button class="active" type="button" data-auto="supervised">Supervised</button><button type="button" data-auto="full">Full auto</button></div><label class="chip" style="gap:6px" title="Auto-resume after a guard pause (0 = off, max 2 resumes/hour)">resume <input id="autoResumeMin" type="number" min="0" max="120" style="width:44px;height:18px;border:0;outline:0;background:transparent;color:var(--text);font-size:11px" placeholder="0"> min</label><button class="switch off" id="autoSwitch" type="button" aria-label="Toggle autopilot" aria-pressed="false"><i></i></button></div>
+            <div class="metrics">
+              <div class="metric"><div class="metric-label">Session</div><div class="metric-value" id="aSession">0m</div><div class="metric-note">continuous runtime</div></div>
+              <div class="metric"><div class="metric-label">Exchanges</div><div class="metric-value" id="aExch">0</div><div class="metric-note" id="aExchNote">this run</div></div>
+              <div class="metric"><div class="metric-label">Merged</div><div class="metric-value" id="aMerged">0</div><div class="metric-note">this session</div></div>
+              <div class="metric"><div class="metric-label">Needs you</div><div class="metric-value" id="aNeeds">0</div><div class="metric-note">approvals</div></div>
+            </div>
+            <div class="digest" id="digest"><div class="digest-icon">☼</div><div><h2>Morning digest</h2><p id="digestText">The digest sums up what happened while you were away — missions, merges, and needs-you items.</p></div><span class="push"></span><button class="primary hidden" id="digestReview" type="button" data-review>Review merge</button></div>
+            <div class="grid auto-grid">
+              <section class="panel"><div class="panel-head"><span class="panel-title">Mission queue</span><span class="caption" id="missionSummary">0 of 0 done</span><span class="push"></span><button class="icon" id="addMission" type="button" aria-label="New mission">＋</button></div><div class="missions" id="missionQueue"></div></section>
+              <section class="panel"><div class="panel-head"><span class="panel-title">Run timeline</span><span class="push"></span><span class="caption">this session</span></div><div class="timeline" id="timeline"></div></section>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <aside class="inspector" aria-label="Inspector">
+        <div class="inspect-inner">
+          <div class="inspect-tabs" role="tablist"><button class="active" type="button" data-pane="tasks">Tasks</button><button type="button" data-pane="bus">Bus</button><button type="button" data-pane="locks">Locks</button><button type="button" data-pane="merge">Merge</button></div>
+          <div class="inspect-scroll">
+            <div class="pane active" id="pane-tasks"></div>
+            <div class="pane" id="pane-bus"></div>
+            <div class="pane" id="pane-locks"></div>
+            <div class="pane" id="pane-merge"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="status" id="statusBar"></footer>
+  </div>
+
+  <div class="backdrop" id="backdrop"></div>
+  <div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Command palette">
+    <div class="palette-search"><span class="quiet">⌕</span><input id="paletteInput" type="text" placeholder="Type a command…" autocomplete="off"><span class="key">esc</span></div>
+    <div class="palette-list" id="paletteList"></div>
+  </div>
+  <section class="review" id="review" role="dialog" aria-modal="true" aria-label="Review merge">
+    <div class="sheet-head"><span class="sheet-title" id="reviewTitle">Review</span><span class="chip" id="reviewChip"></span><span class="push"></span><button class="icon" id="reviewClose" type="button" aria-label="Close review">×</button></div>
+    <div class="sheet-body"><div class="files" id="reviewFiles"></div><div class="review-main"><pre class="review-diff" id="reviewDiff"></pre><div class="sheet-actions"><input id="changeRequest" type="text" placeholder="Request changes…"><button class="button" id="requestChanges" type="button">Request changes</button><button class="primary" id="approveMerge" type="button">Approve &amp; merge</button></div></div></div>
+  </section>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <!-- Settings modal (Phase 5) — reuses the Mesh Inspector styling -->
+  <aside class="mesh-config settings-modal" id="settingsModal" aria-label="App settings" hidden>
+    <div class="mesh-config-head"><div><div class="mesh-config-title">Settings</div><div class="mesh-config-sub">Saved to .state/settings.json · applies live</div></div><span class="push"></span><button class="icon" id="settingsClose" type="button" aria-label="Close settings">×</button></div>
+    <div class="mesh-config-body">
+      <section class="mesh-config-section"><div class="mesh-config-label">Launch commands <span>per agent preset</span></div>
+        <label class="mesh-field">Claude<input class="mono" id="setLaunchClaude" type="text"></label>
+        <label class="mesh-field">Codex<input class="mono" id="setLaunchCodex" type="text"></label>
+        <label class="mesh-field">Grok<input class="mono" id="setLaunchGrok" type="text"></label>
+        <label class="mesh-field">Aider<input class="mono" id="setLaunchAider" type="text"></label>
+      </section>
+      <section class="mesh-config-section"><div class="mesh-config-label">Reasoning effort <span>applied at launch to every new agent</span></div>
+        <label class="mesh-field">Default level<select id="setEffort"><option value="low">low</option><option value="medium">medium</option><option value="high">high</option><option value="xhigh">xhigh</option><option value="max">max</option></select></label>
+        <label class="mesh-field">Claude flag <span>{level} is substituted</span><input class="mono" id="setEffortClaude" type="text" placeholder="--effort {level}"></label>
+        <label class="mesh-field">Codex flag<input class="mono" id="setEffortCodex" type="text" placeholder='-c model_reasoning_effort="{level}"'></label>
+        <label class="mesh-field">Grok flag<input class="mono" id="setEffortGrok" type="text" placeholder="--effort {level}"></label>
+        <label class="mesh-field">Aider flag<input class="mono" id="setEffortAider" type="text" placeholder="your CLI's effort flag"></label>
+      </section>
+      <section class="mesh-config-section"><div class="mesh-config-label">Terminal</div>
+        <label class="mesh-field">Default shell (blank = system default)<input class="mono" id="setShell" type="text" placeholder="powershell.exe"></label>
+      </section>
+      <section class="mesh-config-section"><div class="mesh-config-label">Defaults</div>
+        <label class="mesh-field">Theme on startup<select id="setTheme"><option value="dark">Black</option><option value="light">White</option></select></label>
+        <label class="mesh-field">New-agent activation<select id="setActivation"><option value="manual">Manual</option><option value="immediate">Immediate</option><option value="on_parent_handoff">After Parent handoff</option></select></label>
+      </section>
+      <section class="mesh-config-section"><button class="button small" id="settingsSave" type="button" style="width:100%">Save settings</button></section>
+    </div>
+  </aside>
+  <div class="mesh-context" id="meshContextMenu" role="menu" aria-label="Terminal role" hidden><div class="mesh-context-label" id="meshContextLabel">Terminal role</div><button type="button" role="menuitemradio" data-mesh-role="head">♛ Set as HEAD</button><button type="button" role="menuitemradio" data-mesh-role="normal">○ Set as Normal terminal</button><button type="button" role="menuitem" data-mesh-action="inspect">⌘ Open Mesh Inspector</button><button type="button" role="menuitem" data-mesh-action="chat">▤ Open chat</button></div>
+
+  <script src="../node_modules/@xterm/xterm/lib/xterm.js"></script>
+  <script src="../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+  <script src="./js/core.js"></script>
+  <script src="./js/chatlens.js"></script>
+  <script src="./js/shell.js"></script>
+  <script src="./js/meshview.js"></script>
+  <script src="./js/workbench.js"></script>
+  <script src="./js/autopilot.js"></script>
+  <script src="./js/inspector.js"></script>
+  <script src="./js/review.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
