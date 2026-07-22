@@ -20,6 +20,10 @@ permissions:
 jobs:
   mac:
     runs-on: macos-latest
+    env:
+      # Publishing gates on this: an unsigned CI build must never overwrite the
+      # signed dmg/zip/latest-mac.yml already uploaded from the Mac Mini.
+      HAS_MAC_CERT: ${{ secrets.MAC_CERT_P12 != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,7 +34,7 @@ jobs:
       # zip + dmg for x64 + arm64 (the zip is what the mac updater installs
       # from). Empty env vars behave as unset: no cert secret → unsigned build,
       # no Apple ID secret → notarization skipped with a warning.
-      - run: npm run dist:mac -- --x64 --arm64 --publish ${{ startsWith(github.ref, 'refs/tags/') && 'always' || 'never' }}
+      - run: npm run dist:mac -- --x64 --arm64 --publish ${{ startsWith(github.ref, 'refs/tags/') && env.HAS_MAC_CERT == 'true' && 'always' || 'never' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_LINK: ${{ secrets.MAC_CERT_P12 }}
